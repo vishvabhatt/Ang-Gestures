@@ -28,13 +28,12 @@ export class PinchZoomComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('OnInit');
     this.img = document.getElementById(
       'pinch-zoom-image-id'
     ) as HTMLImageElement;
     this.container = this.img.parentElement as HTMLElement;
 
-    this.disableImgEventHandlers();
+    // this.disableImgEventHandlers();
 
     this.imgWidth = this.img.width;
     this.imgHeight = this.img.height;
@@ -54,6 +53,7 @@ export class PinchZoomComponent implements OnInit {
     });
 
     hammer.on('pan', (e: any) => {
+      console.log('Pan');
       this.translate(e.deltaX, e.deltaY);
     });
 
@@ -62,6 +62,8 @@ export class PinchZoomComponent implements OnInit {
     });
 
     hammer.on('pinch', (e: any) => {
+      console.log('pinch');
+
       if (this.pinchCenter === null) {
         this.pinchCenter = this.rawCenter(e);
         const offsetX =
@@ -193,12 +195,12 @@ export class PinchZoomComponent implements OnInit {
     const scrollTop = window.pageYOffset
       ? window.pageYOffset
       : document.body.scrollTop;
+    console.log('scrollleft,', scrollLeft, 'scrolltop,', scrollTop);
+    console.log('this.x,', this.x, 'this.y,', this.y);
 
-    const zoomX =
-      -this.x + (e.center.x - pos.x + scrollLeft) / (this.scale as number);
-    const zoomY =
-      -this.y + (e.center.y - pos.y + scrollTop) / (this.scale as number);
-
+    const zoomX = -this.x + (e.center.x - pos.x + scrollLeft) / this.scale!;
+    const zoomY = -this.y + (e.center.y - pos.y + scrollTop) / this.scale!;
+    console.log('zoomx and y co-ords', { x: zoomX, y: zoomY });
     return { x: zoomX, y: zoomY };
   }
 
