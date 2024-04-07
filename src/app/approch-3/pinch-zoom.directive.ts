@@ -32,7 +32,7 @@ export class PinchZoomDirective implements AfterViewInit {
     element.removeEventListener('touchmove', (event) => {
       event.preventDefault();
     });
-    const hammerManager = new Hammer.Manager(element,  {touchAction: 'auto' });
+    const hammerManager = new Hammer.Manager(element);
     const pinch = new Hammer.Pinch();
     const swipeOption: RecognizerOptions = {
       pointers: 3,
@@ -72,7 +72,7 @@ export class PinchZoomDirective implements AfterViewInit {
       this.prevImage();
     });
   }
-  
+
   private nextImage(): void {
     if (this.currentIndex < this.images.length - 1) {
       this.currentIndex++;
