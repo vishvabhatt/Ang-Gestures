@@ -6,7 +6,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { DIRECTION_HORIZONTAL } from 'hammerjs';
+import { DIRECTION_HORIZONTAL, Pan } from 'hammerjs';
 
 @Directive({
   selector: '[appPinchZoom]',
@@ -42,7 +42,6 @@ export class PinchZoomDirective implements AfterViewInit {
 
     hammerManager.add([pinch, swipe]);
     hammerManager.get('pinch').set({ enable: true });
-
     hammerManager.on('pinchmove', (event) => {
       console.log('pinchMove', event)
       this.currentScale = this.adjustScale * event.scale;
@@ -71,6 +70,16 @@ export class PinchZoomDirective implements AfterViewInit {
       console.log('right-swipped', event);
       this.prevImage();
     });
+
+    element.addEventListener('touchmove',(event)=>{
+      if (event.touches.length === 3) {
+        console.log('Disabling Pinch')
+        hammerManager.get(pinch).set({enable:false})
+      } else {
+        console.log('Enabling Pinch')
+        hammerManager.get(pinch).set({enable:true})
+      }
+    })
   }
 
   private nextImage(): void {
