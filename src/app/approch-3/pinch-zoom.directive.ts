@@ -54,11 +54,32 @@ export class PinchZoomDirective implements AfterViewInit {
     hammerManager.get('pinch').set({ enable: true });
   
     hammerManager.on("pinch", (event) => {
+      this.currentScale = this.adjustScale * event.scale;
+      this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
+      this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+
+      let transforms = ['scale(' + this.currentScale + ')'];
+      transforms.push(
+        'translate(' + this.currentDeltaX + 'px,' + this.currentDeltaY + 'px)'
+      );
+      element.style.transform = transforms.join(' ');
+    });
+
+    hammerManager.on('pinchend', (event) => {
+      console.log('end event', event);
+      this.adjustScale = this.currentScale!;
+      this.adjustDeltaX = this.currentDeltaX!;
+      this.adjustDeltaY = this.currentDeltaY!;
     });
   
     hammerManager.on("swipeleft", (event) =>  {
+      console.log('left-swipped', event);
+      this.nextImage();
     });
-    hammerManager.on('swiperight',(event)=>{});
+    hammerManager.on('swiperight',(event)=>{
+      console.log('right-swipped', event);
+      this.prevImage();
+    });
 
     /*hammerManager.on('pinchmove', (event) => {
       console.log('pinchMove', event)
