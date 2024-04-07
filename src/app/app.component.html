@@ -1,3 +1,8 @@
 <div class="background">
-  <img #imageElement src="../assets/reputation.jpg" alt="Serenity" appPanZoom />
+  <img
+    [src]="imageUrl"
+    (imageUrl)="updateImageUrl($event)"
+    alt="Serenity"
+    appPinchZoom
+  />
 </div>

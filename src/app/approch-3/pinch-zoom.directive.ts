@@ -1,4 +1,12 @@
-import { AfterViewInit, Directive, ElementRef } from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
+import { DIRECTION_HORIZONTAL } from 'hammerjs';
 
 @Directive({
   selector: '[appPinchZoom]',
@@ -12,21 +20,31 @@ export class PinchZoomDirective implements AfterViewInit {
   private currentDeltaY: number | undefined;
   private currentScale: number | undefined;
 
+  private images: string[] = ['left', 'center', 'right'];
+  private currentIndex = 0;
+  @Output() imageUrl = new EventEmitter<string>();
+
   constructor(private readonly elementRef: ElementRef) {
-    console.log('PinchZoomDirective', this.elementRef);
+    this.imageUrl.emit(this.images[this.currentIndex]);
   }
   public ngAfterViewInit(): void {
     const element = this.elementRef.nativeElement as HTMLElement;
     element.removeEventListener('touchmove', (event) => {
       event.preventDefault();
     });
-    const mc = new Hammer.Manager(element);
+    const hammerManager = new Hammer.Manager(element);
     const pan = new Hammer.Pan();
     const pinch = new Hammer.Pinch();
-    mc.add([pan, pinch]);
-    mc.get('pinch').set({ enable: true });
+    const swipeOption: RecognizerOptions = {
+      pointers: 2,
+      direction: DIRECTION_HORIZONTAL,
+    };
+    const swipe = new Hammer.Swipe(swipeOption);
 
-    mc.on('panmove pinchmove rotatemove', (event) => {
+    hammerManager.add([pan, pinch, swipe]);
+    hammerManager.get('pinch').set({ enable: true });
+
+    hammerManager.on('panmove pinchmove', (event) => {
       console.log('event ', event);
       this.currentScale = this.adjustScale * event.scale;
       this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
@@ -39,11 +57,33 @@ export class PinchZoomDirective implements AfterViewInit {
       element.style.transform = transforms.join(' ');
     });
 
-    mc.on('panend pinchend', (event) => {
+    hammerManager.on('panend pinchend', (event) => {
       console.log('end event', event);
       this.adjustScale = this.currentScale!;
       this.adjustDeltaX = this.currentDeltaX!;
       this.adjustDeltaY = this.currentDeltaY!;
     });
+
+    hammerManager.on('swipeleft', (event) => {
+      console.log('left-swipped', event);
+      this.prevImage();
+    });
+    hammerManager.on('swiperight', (event) => {
+      console.log('right-swipped', event);
+      this.nextImage();
+    });
+  }
+  private nextImage(): void {
+    if (this.currentIndex < this.images.length - 1) {
+      this.currentIndex++;
+      this.imageUrl.emit(this.images[this.currentIndex]);
+    }
+  }
+
+  private prevImage(): void {
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
+      this.imageUrl.emit(this.images[this.currentIndex]);
+    }
   }
 }
