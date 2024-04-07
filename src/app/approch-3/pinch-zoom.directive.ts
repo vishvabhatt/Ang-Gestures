@@ -34,17 +34,18 @@ export class PinchZoomDirective implements AfterViewInit {
     });
     const hammerManager = new Hammer.Manager(element);
     const pinch = new Hammer.Pinch();
-    // const swipeOption: RecognizerOptions = {
-    //   pointers: 2,
-    //   direction: DIRECTION_HORIZONTAL,
-    // };
-    const swipe = new Hammer.Swipe();
+    const swipeOption: RecognizerOptions = {
+      pointers: 2,
+      direction: DIRECTION_HORIZONTAL,
+    };
+    const swipe = new Hammer.Swipe(swipeOption);
 
-    hammerManager.add([pinch, swipe]);
-    hammerManager.get('pinch').set({ enable: true });
+    hammerManager.add([swipe]);
+    // hammerManager.get('pinch').set({ enable: true });
 
     hammerManager.on('pinchmove', (event) => {
-      console.log('event ', event);
+      console.log('first finger', event);
+
       this.currentScale = this.adjustScale * event.scale;
       this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
       this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
