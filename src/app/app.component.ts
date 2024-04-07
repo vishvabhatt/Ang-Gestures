@@ -8,8 +8,9 @@ import { Component } from '@angular/core';
 export class AppComponent {
   public imageUrl = '';
   constructor() {}
-   public updateImageUrl($event: string) {
-    this.imageUrl = `../assets/${$event}`;
+  public updateImageUrl($event: string) {
+    console.log('Update image url');
+    this.imageUrl = `../assets/${$event}.jpg`;
     console.log('updateImage', this.imageUrl);
   }
 }

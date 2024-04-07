@@ -24,10 +24,10 @@ export class PinchZoomDirective implements AfterViewInit {
   private currentIndex = 0;
   @Output() imageUrl = new EventEmitter<string>();
 
-  constructor(private readonly elementRef: ElementRef) {
-    this.imageUrl.emit(this.images[this.currentIndex]);
-  }
+  constructor(private readonly elementRef: ElementRef) {}
   public ngAfterViewInit(): void {
+    this.imageUrl.emit(this.images[this.currentIndex]);
+
     const element = this.elementRef.nativeElement as HTMLElement;
     element.removeEventListener('touchmove', (event) => {
       event.preventDefault();
@@ -65,11 +65,11 @@ export class PinchZoomDirective implements AfterViewInit {
 
     hammerManager.on('swipeleft', (event) => {
       console.log('left-swipped', event);
-      this.prevImage();
+      this.nextImage();
     });
     hammerManager.on('swiperight', (event) => {
       console.log('right-swipped', event);
-      this.nextImage();
+      this.prevImage();
     });
   }
   private nextImage(): void {
