@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { PinchZoom } from './pinch.zoom';
 
 @Component({
   selector: 'app-pinch-zoom',
@@ -6,226 +7,209 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./pinch-zoom.component.css'],
 })
 export class PinchZoomComponent implements OnInit {
-  MIN_SCALE = 1; // 1=scaling when first loaded
-  MAX_SCALE = 64;
+  private MIN_SCALE = 1;
+  private MAX_SCALE = 64;
+  private imageWidth = 0;
+  private imageHeight = 0;
+  private viewportWidth = 0;
+  private viewportHeight = 0;
+  private scale = 1;
+  private lastScale = 1;
+  private imageElement: HTMLImageElement | undefined;
+  private container: HTMLElement | undefined;
 
-  imgWidth: number | undefined = undefined;
-  imgHeight: number | undefined = undefined;
-  viewportWidth: number | undefined = undefined;
-  viewportHeight: number | undefined = undefined;
-  scale: number | undefined = undefined;
-  lastScale: number | undefined = undefined;
-  container: HTMLElement | undefined = undefined;
-  img: HTMLImageElement | undefined = undefined;
-  x = 0;
-  lastX = 0;
-  y = 0;
-  lastY = 0;
-  pinchCenter: { x: number; y: number } | undefined = undefined;
+  private x = 0;
+  private lastX = 0;
+  private y = 0;
+  private lastY = 0;
 
-  constructor() {
-    console.log('PinchZoomCompoent');
-  }
+  private curWidth = 0;
+  private curHeight = 0;
+  private pinchCenter: { x: number; y: number; } | undefined
 
-  ngOnInit(): void {
-    this.img = document.getElementById(
-      'pinch-zoom-image-id'
-    ) as HTMLImageElement;
-    this.container = this.img.parentElement as HTMLElement;
-
-    // this.disableImgEventHandlers();
-
-    this.imgWidth = this.img.width;
-    this.imgHeight = this.img.height;
-    this.viewportWidth = this.img.offsetWidth;
-    this.scale = this.viewportWidth / (this.imgWidth as number);
+  
+  public ngOnInit(): void {
+    this.imageElement = document.getElementById('pinch-zoom-image-id') as HTMLImageElement ?? undefined;
+    if (this.imageElement === undefined) {
+      throw new Error('ImageElem is undefined');
+    } else {
+      if (this.imageElement.parentElement) {
+        this.container = this.imageElement.parentElement;
+      } else {
+        throw new Error('Container is undefined');
+      }
+    }
+    this.disableEvents();
+    this.imageWidth = this.imageElement.width;
+    this.imageHeight = this.imageElement.height;
+    this.viewportWidth = this.imageElement.offsetWidth;
+    this.scale = this.viewportWidth / this.imageWidth;
     this.lastScale = this.scale;
-    this.viewportHeight = this.img.parentElement?.offsetHeight;
-    const curWidth = (this.imgWidth as number) * (this.scale as number);
-    const curHeight = (this.imgHeight as number) * (this.scale as number);
+    this.viewportHeight = this.container.offsetHeight;
+    this.curWidth = this.imageWidth * this.scale;
+    this.curHeight = this.imageHeight * this.scale;
 
-    const hammer = new Hammer(this.container, {
-      domEvents: true,
+    console.log('Values are set, initing hammer');
+    const hammer = new Hammer.Manager(this.container);
+    const pinch = new Hammer.Pinch();
+    hammer.add([pinch]);
+    hammer.get('pinch').set({ enable: true });
+    console.log('hammer=configured');
+    
+    hammer.on('pan', (panEvent) => {
+      console.log('=== PanEvent ===')
+      this.translate(panEvent.deltaX, panEvent.deltaY);
     });
 
-    hammer.get('pinch').set({
-      enable: true,
-    });
-
-    hammer.on('pan', (e: any) => {
-      console.log('Pan');
-      this.translate(e.deltaX, e.deltaY);
-    });
-
-    hammer.on('panend', () => {
+    hammer.on('panend', (panendedEvent) => {
+      console.log('=== pan-ended-event ===')
       this.updateLastPos();
     });
 
-    hammer.on('pinch', (e: any) => {
-      console.log('pinch');
+    hammer.on('pinch', (pinchEvent) => {
+      console.log('=== pinch event detected ===', pinchEvent.scale);
 
-      if (this.pinchCenter === null) {
-        this.pinchCenter = this.rawCenter(e);
-        const offsetX =
-          this.pinchCenter.x * (this.scale as number) -
-          (-this.x * (this.scale as number) +
-            Math.min(this.viewportWidth as number, curWidth) / 2);
-        const offsetY =
-          this.pinchCenter.y * (this.scale as number) -
-          (-this.y * (this.scale as number) +
-            Math.min(this.viewportHeight as number, curHeight) / 2);
-        this.pinchCenter = { x: offsetX, y: offsetY };
+      // We only calculate the pinch center on the first pinch event as we want the center to
+      // stay consistent during the entire pinch
+      let pinchCenterOffset: { x: number; y: number; } = {x:0, y: 0};
+      if (this.pinchCenter === undefined) {
+        console.log('pitchCenter is undefined');
+        this.pinchCenter = this.rawCenter(pinchEvent);
+        var offsetX = this.pinchCenter.x*this.scale - (-this.x*this.scale + Math.min(this.viewportWidth, this.curWidth)/2);
+        var offsetY = this.pinchCenter.y*this.scale - (-this.y*this.scale + Math.min(this.viewportHeight, this.curHeight)/2);
+        pinchCenterOffset = { x: offsetX, y: offsetY };
+        console.log('calculated=>', pinchCenterOffset)
       }
 
-      const newScale = this.restrictScale((this.scale as number) * e.scale);
-      const zoomX = this.pinchCenter!.x * newScale - this.pinchCenter!.x;
-      const zoomY = this.pinchCenter!.y * newScale - this.pinchCenter!.y;
-      const zoomCenter = { x: zoomX / newScale, y: zoomY / newScale };
+      // When the user pinch zooms, she/he expects the pinch center to remain in the same
+      // relative location of the screen. To achieve this, the raw zoom center is calculated by
+      // first storing the pinch center and the scaled offset to the current center of the
+      // image. The new scale is then used to calculate the zoom center. This has the effect of
+      // actually translating the zoom center on each pinch zoom event.
+     
+      var newScale = this.restrictScale(this.scale*pinchEvent.scale);
+      var zoomX = this.pinchCenter.x*newScale - pinchCenterOffset.x;
+      var zoomY = this.pinchCenter.y*newScale - pinchCenterOffset.y;
+      var zoomCenter = { x: zoomX/newScale, y: zoomY/newScale }; 
 
-      this.zoomAround(e.scale, zoomCenter.x, zoomCenter.y, true);
+      this.zoomAround(pinchEvent.scale, zoomCenter.x, zoomCenter.y, true);
     });
-
-    hammer.on('pinchend', () => {
+    hammer.on('pinchend',  (e)=> {
+      console.log('pinch-end')
       this.updateLastScale();
       this.updateLastPos();
       this.pinchCenter = undefined;
     });
 
-    hammer.on('doubletap', (e: any) => {
-      const c = this.rawCenter(e);
+    hammer.on('doubletap', (e) => {
+      var c = this.rawCenter(e);
       this.zoomAround(2, c.x, c.y);
     });
+  
   }
-
-  disableImgEventHandlers(): void {
-    var events = [
-      'onclick',
-      'onmousedown',
-      'onmousemove',
-      'onmouseout',
-      'onmouseover',
-      'onmouseup',
-      'ondblclick',
-      'onfocus',
-      'onblur',
-    ];
-
-    events.forEach((event) => {
-      this.img!.removeEventListener(event, (listener) => {
-        listener.preventDefault();
-      });
-    });
+  private disableEvents(): void {
+    var eventNames = ['onclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover',
+      'onmouseup', 'ondblclick', 'onfocus', 'onblur'];
+    if (this.imageElement) {
+      eventNames.forEach((eventName) => {
+        console.log('Disabeling Events')
+        this.imageElement!.removeEventListener(eventName, (event) => { 
+          console.log('RemovedEvent', eventName)
+          event.preventDefault()
+         });
+      })
+    }
   }
-
-  absolutePosition(el: HTMLElement): { x: number; y: number } {
+  private absolutePosition(htmlElement: HTMLElement): { x: number; y: number } {
     let x = 0;
     let y = 0;
 
-    while (el !== null) {
-      x += el.offsetLeft;
-      y += el.offsetTop;
-      el = el.offsetParent as HTMLElement;
+    while (htmlElement !== null) {
+      x += htmlElement.offsetLeft;
+      y += htmlElement.offsetTop;
+      htmlElement = htmlElement.offsetParent as HTMLElement;
     }
-
+    console.log('AbsoultedPosition', {x,y});
     return { x, y };
   }
-
-  restrictScale(scale: number): number {
+  private restrictScale(scale: number): number {
+    console.log('RestrictScale', scale);
     if (scale < this.MIN_SCALE) {
-      return this.MIN_SCALE;
+      scale = this.MIN_SCALE;
     } else if (scale > this.MAX_SCALE) {
-      return this.MAX_SCALE;
+      scale = this.MAX_SCALE;
     }
     return scale;
   }
-
-  updateLastPos(): void {
-    this.lastX = this.x;
-    this.lastY = this.y;
-  }
-
-  translate(deltaX: number, deltaY: number): void {
-    const curWidth = (this.imgWidth as number) * (this.scale as number);
-    const curHeight = (this.imgHeight as number) * (this.scale as number);
-
-    const newX = this.restrictRawPos(
-      this.lastX + deltaX / (this.scale as number),
-      Math.min(this.viewportWidth as number, curWidth),
-      this.imgWidth as number
-    );
-    this.x = newX;
-    if (this.img) {
-      this.img.style.marginLeft =
-        Math.ceil(newX * (this.scale as number)) + 'px';
-    }
-
-    const newY = this.restrictRawPos(
-      this.lastY + deltaY / (this.scale as number),
-      Math.min(this.viewportHeight as number, curHeight),
-      this.imgHeight as number
-    );
-    this.y = newY;
-    if (this.img) {
-      this.img.style.marginTop =
-        Math.ceil(newY * (this.scale as number)) + 'px';
-    }
-  }
-
-  restrictRawPos(pos: number, viewportDim: number, imgDim: number): number {
-    if (pos < viewportDim / (this.scale as number) - imgDim) {
-      // too far left/up?
-      return viewportDim / (this.scale as number) - imgDim;
-    } else if (pos > 0) {
-      // too far right/down?
-      return 0;
+  private restrictRawPos(pos: number, viewportDim: number, imgDim: number): number {
+    if (pos < viewportDim / this.scale - imgDim) { // too far left/up?
+      pos = viewportDim / this.scale - imgDim;
+    } else if (pos > 0) { // too far right/down?
+      pos = 0;
     }
     return pos;
   }
-
-  updateLastScale(): void {
-    this.lastScale = this.scale;
+  private updateLastPos(): void {
+    this.lastX = this.x
+    this.lastY = this.y
   }
+  private translate(deltaX: number, deltaY: number): void {
+    if (this.imageElement) {
+      const newX = this.restrictRawPos(this.lastX + deltaX / this.scale,
+        Math.min(this.viewportWidth, this.curWidth), this.imageWidth);
+      this.x = newX;
+      this.imageElement.style.marginLeft = Math.ceil(newX * this.scale) + 'px';
 
-  rawCenter(e: any): { x: number; y: number } {
-    const pos = this.absolutePosition(this.container as HTMLElement);
+      const newY = this.restrictRawPos(this.lastY + deltaY / this.scale,
+        Math.min(this.viewportHeight, this.curHeight), this.imageHeight);
+      this.y = newY;
+      this.imageElement.style.marginTop = Math.ceil(newY * this.scale) + 'px';
+    }
+  }
+  private zoom(scaleBy: number): void {
+    this.scale = this.restrictScale(this.lastScale * scaleBy);
 
-    const scrollLeft = window.pageXOffset
-      ? window.pageXOffset
-      : document.body.scrollLeft;
-    const scrollTop = window.pageYOffset
-      ? window.pageYOffset
-      : document.body.scrollTop;
-    console.log('scrollleft,', scrollLeft, 'scrolltop,', scrollTop);
-    console.log('this.x,', this.x, 'this.y,', this.y);
+    this.curWidth = this.imageWidth * this.scale;
+    this.curHeight = this.imageHeight * this.scale;
 
-    const zoomX = -this.x + (e.center.x - pos.x + scrollLeft) / this.scale!;
-    const zoomY = -this.y + (e.center.y - pos.y + scrollTop) / this.scale!;
-    console.log('zoomx and y co-ords', { x: zoomX, y: zoomY });
+    this.imageElement!.style.width = Math.ceil(this.curWidth) + 'px';
+    this.imageElement!.style.height = Math.ceil(this.curHeight) + 'px';
+
+    // Adjust margins to make sure that we aren't out of bounds
+    this.translate(0, 0);
+  }
+  private rawCenter(e: HammerInput) {
+    console.log('RawCenter')
+    var pos = this.absolutePosition(this.container!);
+    // We need to account for the scroll position
+    var scrollLeft = window.scrollX ? window.scrollX : document.body.scrollLeft;
+    var scrollTop = window.scrollY ? window.scrollY : document.body.scrollTop;
+
+    var zoomX = -this.x + (e.center.x - pos.x + scrollLeft) / this.scale;
+    var zoomY = -this.y + (e.center.y - pos.y + scrollTop) / this.scale;
+    console.log('RawCenter','ZoomX',zoomX, 'ZoomY', zoomY);
     return { x: zoomX, y: zoomY };
   }
-
-  zoomAround(
-    scaleBy: number,
+  private updateLastScale(): void {
+    this.lastScale = this.scale
+  }
+  private zoomAround(scaleBy: number,
     rawZoomX: number,
     rawZoomY: number,
-    doNotUpdateLast?: boolean
-  ): void {
+    doNotUpdateLast: boolean = false): void {
+    // Zoom
+    console.log('ZoomAround', rawZoomX, rawZoomY, doNotUpdateLast);
     this.zoom(scaleBy);
 
-    const rawCenterX =
-      -this.x +
-      Math.min(this.viewportWidth as number, this.imgWidth as number) /
-        2 /
-        (this.scale as number);
-    const rawCenterY =
-      -this.y +
-      Math.min(this.viewportHeight as number, this.imgHeight as number) /
-        2 /
-        (this.scale as number);
+    // New raw center of viewport
+    var rawCenterX = -this.x + Math.min(this.viewportWidth, this.curWidth) / 2 / this.scale;
+    var rawCenterY = -this.y + Math.min(this.viewportHeight, this.curHeight) / 2 / this.scale;
 
-    const deltaX = (rawCenterX - rawZoomX) * (this.scale as number);
-    const deltaY = (rawCenterY - rawZoomY) * (this.scale as number);
+    // Delta
+    var deltaX = (rawCenterX - rawZoomX) * this.scale;
+    var deltaY = (rawCenterY - rawZoomY) * this.scale;
 
+    // Translate back to zoom center
     this.translate(deltaX, deltaY);
 
     if (!doNotUpdateLast) {
@@ -233,40 +217,10 @@ export class PinchZoomComponent implements OnInit {
       this.updateLastPos();
     }
   }
-
-  zoomCenter(scaleBy: number): void {
-    const zoomX =
-      -this.x +
-      Math.min(this.viewportWidth as number, this.imgWidth as number) /
-        2 /
-        (this.scale as number);
-    const zoomY =
-      -this.y +
-      Math.min(this.viewportHeight as number, this.imgHeight as number) /
-        2 /
-        (this.scale as number);
-
+  private zoomCenter(scaleBy: number): void {
+    var zoomX = -this.x + Math.min(this.viewportWidth, this.curWidth) / 2 / this.scale;
+    var zoomY = -this.y + Math.min(this.viewportHeight, this.curHeight) / 2 / this.scale;
     this.zoomAround(scaleBy, zoomX, zoomY);
   }
-
-  zoomIn(): void {
-    this.zoomCenter(2);
-  }
-
-  zoomOut(): void {
-    this.zoomCenter(1 / 2);
-  }
-
-  zoom(scaleBy: number): void {
-    this.scale = this.restrictScale((this.lastScale as number) * scaleBy);
-
-    const curWidth = (this.imgWidth as number) * (this.scale as number);
-    const curHeight = (this.imgHeight as number) * (this.scale as number);
-
-    if (this.img) {
-      this.img.style.width = Math.ceil(curWidth) + 'px';
-      this.img.style.height = Math.ceil(curHeight) + 'px';
-      this.translate(0, 0);
-    }
-  }
 }
+
