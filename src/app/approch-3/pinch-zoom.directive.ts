@@ -32,20 +32,36 @@ export class PinchZoomDirective implements AfterViewInit {
     element.removeEventListener('touchmove', (event) => {
       event.preventDefault();
     });
-    const hammerManager = new Hammer.Manager(element);
+    const hammerManager = new Hammer.Manager(element,  {touchAction: 'auto' });
     const pinch = new Hammer.Pinch();
     const swipeOption: RecognizerOptions = {
-      pointers: 2,
+      pointers: 3,
       direction: DIRECTION_HORIZONTAL,
     };
     const swipe = new Hammer.Swipe(swipeOption);
 
-    hammerManager.add([swipe]);
-    // hammerManager.get('pinch').set({ enable: true });
+    hammerManager.add([pinch, swipe]);
+    hammerManager.get('pinch').set({ enable: true });
 
-    hammerManager.on('pinchmove', (event) => {
-      console.log('first finger', event);
+    hammerManager.add(new Hammer.Swipe({
+      direction: Hammer.DIRECTION_ALL,
+      threshold: 1,
+      velocity:0.1
+    })).recognizeWith(hammerManager.get('pan'));
+  
+    hammerManager.on('panstart panmove', (event) => { event.preventDefault(); });
+  
+    hammerManager.get('pinch').set({ enable: true });
+  
+    hammerManager.on("pinch", (event) => {
+    });
+  
+    hammerManager.on("swipeleft", (event) =>  {
+    });
+    hammerManager.on('swiperight',(event)=>{});
 
+    /*hammerManager.on('pinchmove', (event) => {
+      console.log('pinchMove', event)
       this.currentScale = this.adjustScale * event.scale;
       this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
       this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
@@ -71,7 +87,24 @@ export class PinchZoomDirective implements AfterViewInit {
     hammerManager.on('swiperight', (event) => {
       console.log('right-swipped', event);
       this.prevImage();
-    });
+    });*/
+    /*
+    element.addEventListener('touchmove',(event)=>{
+      console.log('----')
+      
+      if (event.touches.length === 2) {
+        if (event.touches[0].radiusX === event.touches[0].radiusY && event.touches[1].radiusX === event.touches[1].radiusY){
+          console.log('block pinch')
+          hammerManager.remove(pinch)
+        } else {
+          console.log('unblock')
+          hammerManager.add([pinch, swipe])
+        }
+      }
+      console.log('----')
+      
+    }) */
+   
   }
   private nextImage(): void {
     if (this.currentIndex < this.images.length - 1) {
