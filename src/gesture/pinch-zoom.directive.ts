@@ -48,51 +48,6 @@ export class PinchZoomDirective implements AfterViewInit {
     hammerManager.add([swipe, pinch]);
     hammerManager.get('pinch').set({ enable: true });
     hammerManager.on('pinchmove', (event) => {
-      console.log('pinchMove', event.direction);
-
-      // Get current finger positions
-      var finger1X = event.pointers[0].clientX;
-      var finger1Y = event.pointers[0].clientY;
-      var finger2X = event.pointers[1].clientX;
-      var finger2Y = event.pointers[1].clientY;
-
-      // Calculate direction for finger 1
-      var finger1DirectionX =
-        finger1X - this.prevFinger1X > 0 ? 'right' : 'left';
-      var finger1DirectionY = finger1Y - this.prevFinger1Y > 0 ? 'down' : 'up';
-      // Calculate direction for finger 2
-      var finger2DirectionX =
-        finger2X - this.prevFinger2X > 0 ? 'right' : 'left';
-      var finger2DirectionY = finger2Y - this.prevFinger2Y > 0 ? 'down' : 'up';
-
-      if (
-        finger1DirectionX === finger2DirectionX ||
-        finger1DirectionY === finger2DirectionY
-      ) {
-        event.preventDefault();
-        hammerManager.off('pitch');
-        console.log("It's swipe event - should be swipe image");
-      }
-      // Output directions
-      console.log(
-        'Finger 1: X direction - ' +
-          finger1DirectionX +
-          ', Y direction - ' +
-          finger1DirectionY
-      );
-      console.log(
-        'Finger 2: X direction - ' +
-          finger2DirectionX +
-          ', Y direction - ' +
-          finger2DirectionY
-      );
-
-      // Update previous finger positions
-      this.prevFinger1X = finger1X;
-      this.prevFinger1Y = finger1Y;
-      this.prevFinger2X = finger2X;
-      this.prevFinger2Y = finger2Y;
-
       this.currentScale = this.adjustScale * event.scale;
       this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
       this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
@@ -126,8 +81,37 @@ export class PinchZoomDirective implements AfterViewInit {
       console.log('right-swipped', event);
       this.prevImage();
     });
-    hammerManager.on('touchmove', () => {
+    hammerManager.on('touchmove', (event) => {
       console.log('touchhmoved');
+      // Get current finger positions
+      var finger1X = event.pointers[0].clientX;
+      var finger1Y = event.pointers[0].clientY;
+      var finger2X = event.pointers[1].clientX;
+      var finger2Y = event.pointers[1].clientY;
+
+      // Calculate direction for finger 1
+      var finger1DirectionX =
+        finger1X - this.prevFinger1X > 0 ? 'right' : 'left';
+      var finger1DirectionY = finger1Y - this.prevFinger1Y > 0 ? 'down' : 'up';
+      // Calculate direction for finger 2
+      var finger2DirectionX =
+        finger2X - this.prevFinger2X > 0 ? 'right' : 'left';
+      var finger2DirectionY = finger2Y - this.prevFinger2Y > 0 ? 'down' : 'up';
+
+      // Update previous finger positions
+      this.prevFinger1X = finger1X;
+      this.prevFinger1Y = finger1Y;
+      this.prevFinger2X = finger2X;
+      this.prevFinger2Y = finger2Y;
+
+      if (
+        finger1DirectionX === finger2DirectionX ||
+        finger1DirectionY === finger2DirectionY
+      ) {
+        event.preventDefault();
+        hammerManager.off('pitch');
+        console.log("It's swipe event - should be swipe image");
+      }
     });
   }
 
