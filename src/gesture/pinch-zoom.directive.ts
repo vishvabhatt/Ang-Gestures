@@ -20,12 +20,6 @@ export class PinchZoomDirective implements AfterViewInit {
   private currentScale = 1;
 
   private images: string[] = ['left', 'center', 'right'];
-
-  prevFinger1X = 0;
-  prevFinger1Y = 0;
-  prevFinger2X = 0;
-  prevFinger2Y = 0;
-
   private currentIndex = 0;
   @Output() imageUrl = new EventEmitter<string>();
 
@@ -59,13 +53,7 @@ export class PinchZoomDirective implements AfterViewInit {
       element.style.transform = transforms.join(' ');
     });
 
-    hammerManager.on('pinchstart', (ev) => {
-      this.prevFinger1X = ev.pointers[0].clientX;
-      this.prevFinger1Y = ev.pointers[0].clientY;
-      this.prevFinger2X = ev.pointers[1].clientX;
-      this.prevFinger2Y = ev.pointers[1].clientY;
-    });
-
+    
     hammerManager.on('pinchend', (event) => {
       console.log('end event', event);
       this.adjustScale = this.currentScale;
@@ -81,38 +69,7 @@ export class PinchZoomDirective implements AfterViewInit {
       console.log('right-swipped', event);
       this.prevImage();
     });
-    element.addEventListener('touchmove', (event) => {
-      console.log('touchhmoved');
-      // Get current finger positions
-      var finger1X = event.touches[0].clientX;
-      var finger1Y = event.touches[0].clientY;
-      var finger2X = event.touches[1].clientX;
-      var finger2Y = event.touches[1].clientY;
-
-      // Calculate direction for finger 1
-      var finger1DirectionX =
-        finger1X - this.prevFinger1X > 0 ? 'right' : 'left';
-      var finger1DirectionY = finger1Y - this.prevFinger1Y > 0 ? 'down' : 'up';
-      // Calculate direction for finger 2
-      var finger2DirectionX =
-        finger2X - this.prevFinger2X > 0 ? 'right' : 'left';
-      var finger2DirectionY = finger2Y - this.prevFinger2Y > 0 ? 'down' : 'up';
-
-      // Update previous finger positions
-      this.prevFinger1X = finger1X;
-      this.prevFinger1Y = finger1Y;
-      this.prevFinger2X = finger2X;
-      this.prevFinger2Y = finger2Y;
-
-      if (
-        finger1DirectionX === finger2DirectionX ||
-        finger1DirectionY === finger2DirectionY
-      ) {
-        event.preventDefault();
-        hammerManager.off('pitch');
-        console.log("It's swipe event - should be swipe image");
-      }
-    });
+    
   }
 
   private nextImage(): void {
