@@ -16,9 +16,9 @@ export class PinchZoomDirective implements AfterViewInit {
   private adjustDeltaY = 0;
   private adjustScale = 1;
 
-  private currentDeltaX: number | undefined;
-  private currentDeltaY: number | undefined;
-  private currentScale: number | undefined;
+  private currentDeltaX = 0;
+  private currentDeltaY = 0;
+  private currentScale = 1;
 
   private images: string[] = ['left', 'center', 'right'];
   private currentIndex = 0;
@@ -35,12 +35,12 @@ export class PinchZoomDirective implements AfterViewInit {
     const hammerManager = new Hammer.Manager(element);
     const pinch = new Hammer.Pinch();
     const swipeOption: RecognizerOptions = {
-      pointers: 3,
+      pointers: 2,
       direction: DIRECTION_HORIZONTAL,
     };
     const swipe = new Hammer.Swipe(swipeOption);
 
-    hammerManager.add([pinch, swipe]);
+    hammerManager.add([swipe, pinch]);
     hammerManager.get('pinch').set({ enable: true });
     hammerManager.on('pinchmove', (event) => {
       console.log('pinchMove', event)
@@ -57,9 +57,9 @@ export class PinchZoomDirective implements AfterViewInit {
 
     hammerManager.on('pinchend', (event) => {
       console.log('end event', event);
-      this.adjustScale = this.currentScale!;
-      this.adjustDeltaX = this.currentDeltaX!;
-      this.adjustDeltaY = this.currentDeltaY!;
+      this.adjustScale = this.currentScale;
+      this.adjustDeltaX = this.currentDeltaX;
+      this.adjustDeltaY = this.currentDeltaY;
     });
 
     hammerManager.on('swipeleft', (event) => {
