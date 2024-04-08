@@ -70,6 +70,7 @@ export class PinchZoomDirective implements AfterViewInit {
         finger1DirectionY === finger2DirectionY
       ) {
         event.preventDefault();
+        hammerManager.off('pitch');
         console.log("It's swipe event - should be swipe image");
       }
       // Output directions
@@ -125,9 +126,8 @@ export class PinchZoomDirective implements AfterViewInit {
       console.log('right-swipped', event);
       this.prevImage();
     });
-
-    hammerManager.on('hammer.input', (ev) => {
-      console.log(ev.pointers);
+    hammerManager.on('touchmove', () => {
+      console.log('touchhmoved');
     });
   }
 
