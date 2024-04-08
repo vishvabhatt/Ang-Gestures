@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PanZoomDirective } from './pan-zoom/pan-zoom.directive';
 import { HammerModule } from '@angular/platform-browser';
+import { PinchZoomDirective } from './pinch-zoom.directive';
+import { PinchZoomComponent } from './pinch-zoom/pinch-zoom.component';
 
 @NgModule({
-  declarations: [PanZoomDirective],
+  declarations: [PinchZoomDirective, PinchZoomComponent],
   imports: [CommonModule, HammerModule],
-  exports: [PanZoomDirective],
+  exports: [PinchZoomDirective, PinchZoomComponent],
 })
 export class GestureModule {}

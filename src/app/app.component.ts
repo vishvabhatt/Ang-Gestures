@@ -9,8 +9,6 @@ export class AppComponent {
   public imageUrl = '';
   constructor() {}
   public updateImageUrl($event: string) {
-    console.log('Update image url');
     this.imageUrl = `../assets/${$event}.jpg`;
-    console.log('updateImage', this.imageUrl);
   }
 }
