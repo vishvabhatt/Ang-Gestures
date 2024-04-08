@@ -60,12 +60,18 @@ export class PinchZoomDirective implements AfterViewInit {
       var finger1DirectionX =
         finger1X - this.prevFinger1X > 0 ? 'right' : 'left';
       var finger1DirectionY = finger1Y - this.prevFinger1Y > 0 ? 'down' : 'up';
-
       // Calculate direction for finger 2
       var finger2DirectionX =
         finger2X - this.prevFinger2X > 0 ? 'right' : 'left';
       var finger2DirectionY = finger2Y - this.prevFinger2Y > 0 ? 'down' : 'up';
 
+      if (
+        finger1DirectionX === finger2DirectionX ||
+        finger1DirectionY === finger2DirectionY
+      ) {
+        event.preventDefault();
+        console.log("It's swipe event - should be swipe image");
+      }
       // Output directions
       console.log(
         'Finger 1: X direction - ' +
