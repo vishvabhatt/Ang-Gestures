@@ -55,7 +55,6 @@ export class PinchZoomDirective implements AfterViewInit {
 
     
     hammerManager.on('pinchend', (event) => {
-      console.log('end event', event);
       this.adjustScale = this.currentScale;
       this.adjustDeltaX = this.currentDeltaX;
       this.adjustDeltaY = this.currentDeltaY;
