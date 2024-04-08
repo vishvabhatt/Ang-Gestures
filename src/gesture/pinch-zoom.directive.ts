@@ -3,10 +3,9 @@ import {
   Directive,
   ElementRef,
   EventEmitter,
-  Input,
   Output,
 } from '@angular/core';
-import { DIRECTION_HORIZONTAL, Pan } from 'hammerjs';
+import { DIRECTION_HORIZONTAL } from 'hammerjs';
 
 @Directive({
   selector: '[appPinchZoom]',
@@ -21,6 +20,12 @@ export class PinchZoomDirective implements AfterViewInit {
   private currentScale = 1;
 
   private images: string[] = ['left', 'center', 'right'];
+
+  prevFinger1X = 0;
+  prevFinger1Y = 0;
+  prevFinger2X = 0;
+  prevFinger2Y = 0;
+
   private currentIndex = 0;
   @Output() imageUrl = new EventEmitter<string>();
 
@@ -35,7 +40,7 @@ export class PinchZoomDirective implements AfterViewInit {
     const hammerManager = new Hammer.Manager(element);
     const pinch = new Hammer.Pinch();
     const swipeOption: RecognizerOptions = {
-      pointers: 1,
+      pointers: 2,
       direction: DIRECTION_HORIZONTAL,
     };
     const swipe = new Hammer.Swipe(swipeOption);
@@ -43,7 +48,44 @@ export class PinchZoomDirective implements AfterViewInit {
     hammerManager.add([swipe, pinch]);
     hammerManager.get('pinch').set({ enable: true });
     hammerManager.on('pinchmove', (event) => {
-      console.log('pinchMove');
+      console.log('pinchMove', event.direction);
+
+      // Get current finger positions
+      var finger1X = event.pointers[0].clientX;
+      var finger1Y = event.pointers[0].clientY;
+      var finger2X = event.pointers[1].clientX;
+      var finger2Y = event.pointers[1].clientY;
+
+      // Calculate direction for finger 1
+      var finger1DirectionX =
+        finger1X - this.prevFinger1X > 0 ? 'right' : 'left';
+      var finger1DirectionY = finger1Y - this.prevFinger1Y > 0 ? 'down' : 'up';
+
+      // Calculate direction for finger 2
+      var finger2DirectionX =
+        finger2X - this.prevFinger2X > 0 ? 'right' : 'left';
+      var finger2DirectionY = finger2Y - this.prevFinger2Y > 0 ? 'down' : 'up';
+
+      // Output directions
+      console.log(
+        'Finger 1: X direction - ' +
+          finger1DirectionX +
+          ', Y direction - ' +
+          finger1DirectionY
+      );
+      console.log(
+        'Finger 2: X direction - ' +
+          finger2DirectionX +
+          ', Y direction - ' +
+          finger2DirectionY
+      );
+
+      // Update previous finger positions
+      this.prevFinger1X = finger1X;
+      this.prevFinger1Y = finger1Y;
+      this.prevFinger2X = finger2X;
+      this.prevFinger2Y = finger2Y;
+
       this.currentScale = this.adjustScale * event.scale;
       this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
       this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
@@ -53,6 +95,13 @@ export class PinchZoomDirective implements AfterViewInit {
         'translate(' + this.currentDeltaX + 'px,' + this.currentDeltaY + 'px)'
       );
       element.style.transform = transforms.join(' ');
+    });
+
+    hammerManager.on('pinchstart', (ev) => {
+      this.prevFinger1X = ev.pointers[0].clientX;
+      this.prevFinger1Y = ev.pointers[0].clientY;
+      this.prevFinger2X = ev.pointers[1].clientX;
+      this.prevFinger2Y = ev.pointers[1].clientY;
     });
 
     hammerManager.on('pinchend', (event) => {
@@ -70,15 +119,9 @@ export class PinchZoomDirective implements AfterViewInit {
       console.log('right-swipped', event);
       this.prevImage();
     });
-    element.addEventListener('touchmove', (event) => {
-      const finger1X = event.touches[0].screenX;
-      const finger1Y = event.touches[0].screenY;
-      const finger2X = event.touches[1].screenX;
-      const finger2Y = event.touches[1].screenY;
 
-      const distanceX = finger2X - finger1X;
-      const distanceY = finger2Y - finger1Y;
-      console.info('the distance x', distanceX, 'the distance y', distanceY);
+    hammerManager.on('hammer.input', (ev) => {
+      console.log(ev.pointers);
     });
   }
 
