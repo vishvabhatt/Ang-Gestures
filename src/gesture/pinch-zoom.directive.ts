@@ -81,13 +81,13 @@ export class PinchZoomDirective implements AfterViewInit {
       console.log('right-swipped', event);
       this.prevImage();
     });
-    hammerManager.on('touchmove', (event) => {
+    element.addEventListener('touchmove', (event) => {
       console.log('touchhmoved');
       // Get current finger positions
-      var finger1X = event.pointers[0].clientX;
-      var finger1Y = event.pointers[0].clientY;
-      var finger2X = event.pointers[1].clientX;
-      var finger2Y = event.pointers[1].clientY;
+      var finger1X = event.touches[0].clientX;
+      var finger1Y = event.touches[0].clientY;
+      var finger2X = event.touches[1].clientX;
+      var finger2Y = event.touches[1].clientY;
 
       // Calculate direction for finger 1
       var finger1DirectionX =
