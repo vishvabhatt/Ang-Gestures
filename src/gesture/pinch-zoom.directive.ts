@@ -43,7 +43,7 @@ export class PinchZoomDirective implements AfterViewInit {
     hammerManager.add([swipe, pinch]);
     hammerManager.get('pinch').set({ enable: true });
     hammerManager.on('pinchmove', (event) => {
-      console.log('pinchMove', event);
+      console.log('pinchMove');
       this.currentScale = this.adjustScale * event.scale;
       this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
       this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
@@ -69,6 +69,16 @@ export class PinchZoomDirective implements AfterViewInit {
     hammerManager.on('swiperight', (event) => {
       console.log('right-swipped', event);
       this.prevImage();
+    });
+    element.addEventListener('touchmove', (event) => {
+      const finger1X = event.touches[0].screenX;
+      const finger1Y = event.touches[0].screenY;
+      const finger2X = event.touches[1].screenX;
+      const finger2Y = event.touches[1].screenY;
+
+      const distanceX = finger2X - finger1X;
+      const distanceY = finger2Y - finger1Y;
+      console.info('the distance x', distanceX, 'the distance y', distanceY);
     });
   }
 
