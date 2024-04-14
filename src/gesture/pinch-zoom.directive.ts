@@ -19,7 +19,7 @@ export class PinchZoomDirective implements AfterViewInit {
   private currentDeltaY = 0;
   private currentScale = 1;
 
-  private images: string[] = ['left', 'center', 'right'];
+  private images: string[] = ['ttpd', 'tay', 'left', 'center', 'right'];
   private currentIndex = 0;
   @Output() imageUrl = new EventEmitter<string>();
 
