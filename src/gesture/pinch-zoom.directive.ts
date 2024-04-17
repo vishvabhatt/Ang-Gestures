@@ -19,7 +19,7 @@ export class PinchZoomDirective implements AfterViewInit {
   private currentDeltaY = 0;
   private currentScale = 1;
 
-  private images: string[] = ['ttpd', 'tay', 'left', 'center', 'right'];
+  private images: string[] = ['center', 'ttpd', 'tay', 'left', 'right'];
   private currentIndex = 0;
   @Output() imageUrl = new EventEmitter<string>();
 
@@ -54,7 +54,7 @@ export class PinchZoomDirective implements AfterViewInit {
       element.style.transform = transforms.join(' ');
     });
 
-    hammerManager.on('pinchend', (event) => {
+    hammerManager.on('pinchend panend', (event) => {
       this.adjustScale = this.currentScale;
       this.adjustDeltaX = this.currentDeltaX;
       this.adjustDeltaY = this.currentDeltaY;
