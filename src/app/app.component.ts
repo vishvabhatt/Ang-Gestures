@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  public imageUrl = '../assets/tay.jpg';
+  public imageUrl = '../assets/clouds.jpg';
   public eventOutput: string = '';
 
   constructor() {}
