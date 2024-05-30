@@ -81,7 +81,7 @@ export class HammerConfigService extends HammerGestureConfig {
       velocity: 0.3,
     },
     pinch: { enable: true, threshold: 1 },
-    press: { pointer: 1, threshold: 9, time: 300 },
+    press: { pointer: 1, time: 250 },
     pan: {
       direction: Hammer.DIRECTION_ALL,
       pointers: 1,
