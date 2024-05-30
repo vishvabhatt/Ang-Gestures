@@ -58,6 +58,7 @@ export class MultipleGestureDirective implements OnInit {
       'pressup',
       'pinchin',
       'pinchout',
+      'pan',
     ].forEach((eventName) => {
       this.hammerManager.on(eventName, (event) => {
         const output = `${eventName}, ${event.type}`;
