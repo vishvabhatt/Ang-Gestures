@@ -40,18 +40,12 @@ export class PinchZoomDirective implements AfterViewInit {
     const pinch = new Hammer.Pinch();
     const pan = new Hammer.Pan({ pointers: 1 });
 
-    hammerManager.add([swipe, pinch, pan]);
     hammerManager.get('pinch').set({ enable: true });
-    hammerManager.on('pinchmove pan', (event) => {
-      this.currentScale = this.adjustScale * event.scale;
-      this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
-      this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+    hammerManager.add([swipe, pinch, pan]);
 
-      let transforms = ['scale(' + this.currentScale + ')'];
-      transforms.push(
-        'translate(' + this.currentDeltaX + 'px,' + this.currentDeltaY + 'px)'
-      );
-      element.style.transform = transforms.join(' ');
+
+    hammerManager.on('pinchmove', (event) => {
+      console.log('This is callback from the pinch gesture', event)
     });
 
     hammerManager.on('pinchend panend', (event) => {
