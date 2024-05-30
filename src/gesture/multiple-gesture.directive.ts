@@ -51,9 +51,6 @@ export class MultipleGestureDirective implements OnInit {
 
   private listenHammerCallbacks() {
     [
-      'panstart',
-      'panmove',
-      'panend',
       'swipeleft',
       'swiperight',
       'swipe',
@@ -79,7 +76,7 @@ export class HammerConfigService extends HammerGestureConfig {
     swipe: {
       direction: Hammer.DIRECTION_HORIZONTAL,
       enable: true,
-      pointers: 1,
+      pointers: 2,
       threshold: 20,
       velocity: 0.3,
     },
