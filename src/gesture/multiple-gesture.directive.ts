@@ -56,9 +56,6 @@ export class MultipleGestureDirective implements OnInit {
       'swipe',
       'press',
       'pressup',
-      'pinchstart',
-      'pinchmove',
-      'pinchend',
       'pinchin',
       'pinchout',
     ].forEach((eventName) => {
