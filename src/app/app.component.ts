@@ -7,5 +7,10 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   public imageUrl = '../assets/tay.jpg';
+  public eventOutput: string = '';
+
   constructor() {}
+  public onEventOutput(event: string) {
+    this.eventOutput = this.eventOutput + event;
+  }
 }

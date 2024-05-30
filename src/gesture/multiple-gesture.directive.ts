@@ -1,9 +1,11 @@
 import {
   Directive,
   ElementRef,
+  EventEmitter,
   Inject,
   InjectionToken,
   OnInit,
+  Output,
 } from '@angular/core';
 import { HammerGestureConfig } from '@angular/platform-browser';
 
@@ -17,6 +19,7 @@ export const HAMMER_CONFIG_TOKEN = new InjectionToken<HammerGestureConfig>(
 export class MultipleGestureDirective implements OnInit {
   private targetedElement: HTMLElement;
   private hammerManager: HammerManager;
+  @Output() eventOutput = new EventEmitter<string>();
   constructor(
     elementRef: ElementRef,
     @Inject(HAMMER_CONFIG_TOKEN)
@@ -63,7 +66,9 @@ export class MultipleGestureDirective implements OnInit {
       'pinchout',
     ].forEach((eventName) => {
       this.hammerManager.on(eventName, (event) => {
-        console.log('EVENT TYPE TRIGGRED:', eventName, event.type);
+        const output = `${eventName}, ${event.type}`;
+        console.log('output', output);
+        this.eventOutput.emit(output);
       });
     });
   }

@@ -1,3 +1,8 @@
 <div class="background">
-  <img appMultipleGesture [src]="imageUrl" />
+  <img
+    appMultipleGesture
+    (eventOutput)="onEventOutput($event)"
+    [src]="imageUrl"
+  />
+  <textarea [textContent]="eventOutput"></textarea>
 </div>
