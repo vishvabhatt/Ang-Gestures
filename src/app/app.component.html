@@ -1,3 +1,8 @@
 <div class="background">
-  <img [src]="imageUrl" (imageUrl)="updateImageUrl($event)" appPinchZoom />
+  <img
+    appMultipleGesture
+    (eventOutput)="onEventOutput($event)"
+    [src]="imageUrl"
+  />
+  <textarea [textContent]="eventOutput"></textarea>
 </div>

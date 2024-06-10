@@ -1,13 +1,21 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HammerModule } from '@angular/platform-browser';
-import { PinchZoomDirective } from './pinch-zoom.directive';
-import { PinchZoomComponent } from './pinch-zoom/pinch-zoom.component';
-import { MultipleGestureDirective } from './multiple-gesture.directive';
+import {
+  HammerConfigService,
+  HAMMER_CONFIG_TOKEN,
+  MultipleGestureDirective,
+} from './multiple-gesture.directive';
 
 @NgModule({
-  declarations: [PinchZoomDirective, PinchZoomComponent, MultipleGestureDirective],
+  declarations: [MultipleGestureDirective],
   imports: [CommonModule, HammerModule],
-  exports: [PinchZoomDirective, PinchZoomComponent],
+  exports: [MultipleGestureDirective],
+  providers: [
+    {
+      provide: HAMMER_CONFIG_TOKEN,
+      useClass: HammerConfigService,
+    },
+  ],
 })
 export class GestureModule {}
