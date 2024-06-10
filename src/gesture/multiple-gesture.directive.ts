@@ -53,7 +53,6 @@ export class MultipleGestureDirective implements OnInit {
     [
       'swipeleft',
       'swiperight',
-      'swipe',
       'press',
       'pressup',
       'pinchin',
