@@ -52,12 +52,7 @@ export class MultipleGestureDirective implements OnInit {
   private listenHammerCallbacks() {
     this.hammerManager.on('pinchmove', (event) => {
       console.log('pinchmove', event);
-      this.eventOutput.emit('pinchmove');
-    });
-
-    this.hammerManager.on('pan', (event) => {
-      console.log('pan', event);
-      this.eventOutput.emit('pan');
+      // this.eventOutput.emit('pinchmove');
     });
 
     this.hammerManager.on('swipeleft', (event) => {
@@ -78,10 +73,10 @@ export class HammerConfigService extends HammerGestureConfig {
       direction: Hammer.DIRECTION_HORIZONTAL,
       enable: true,
       pointers: 2,
-      threshold: 20,
-      velocity: 0.3,
+      threshold: 1,
+      velocity: 0.1,
     },
-    pinch: { enable: true, threshold: 10 },
+    pinch: { enable: true },
     press: { pointer: 1, time: 250 },
     pan: {
       direction: Hammer.DIRECTION_ALL,
