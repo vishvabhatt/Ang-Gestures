@@ -31,6 +31,9 @@ export class PinchPanGestureDirective implements OnInit {
   private imageHeight = 0;
   private viewportWidth = 0;
   private viewportHeight = 0;
+
+  private readonly MIN_SCALE = 0.5;
+  private readonly MAX_SCALE = 3.0;
   @Output() eventOutput = new EventEmitter<string>();
 
   constructor(
@@ -123,10 +126,14 @@ export class PinchPanGestureDirective implements OnInit {
   }
 
   private handlePinch(event: HammerInput) {
-    this.currentScale = this.adjustScale * event.scale;
+    const newScale = this.adjustScale * event.scale;
+    this.currentScale = Math.max(
+      this.MIN_SCALE,
+      Math.min(this.MAX_SCALE, newScale)
+    );
+    this.eventOutput.emit('Pinch');
     this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
     this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
-    this.eventOutput.emit('Pinch');
     this.applyTransform();
   }
 
