@@ -10,6 +10,6 @@ export class AppComponent {
   public eventOutput: string = '';
   constructor() {}
   public onEventOutput(event: string) {
-    this.eventOutput = /*this.eventOutput +*/ event;
+    this.eventOutput = this.eventOutput + event;
   }
 }

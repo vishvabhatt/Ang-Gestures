@@ -126,12 +126,14 @@ export class PinchPanGestureDirective implements OnInit {
     this.currentScale = this.adjustScale * event.scale;
     this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
     this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+    this.eventOutput.emit('Pinch');
     this.applyTransform();
   }
 
   private handlePan(event: HammerInput) {
     this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
     this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+    this.eventOutput.emit('Pan');
     this.applyTransform();
   }
 
