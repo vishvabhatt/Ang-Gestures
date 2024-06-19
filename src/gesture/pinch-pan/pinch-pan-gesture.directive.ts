@@ -9,15 +9,16 @@ import {
   Renderer2,
 } from '@angular/core';
 import { HammerGestureConfig } from '@angular/platform-browser';
+import { HammerConfigService } from './hammer-config.service';
 
 export const HAMMER_CONFIG_TOKEN = new InjectionToken<HammerGestureConfig>(
   'HAMMER_CONFIG_TOKEN'
 );
 
 @Directive({
-  selector: '[appMultipleGesture]',
+  selector: '[appPinchPanGesture]',
 })
-export class MultipleGestureDirective implements OnInit {
+export class PinchPanGestureDirective implements OnInit {
   private targetedElement: HTMLElement;
   private hammerManager: HammerManager;
   private isPinching = false;
@@ -39,7 +40,6 @@ export class MultipleGestureDirective implements OnInit {
 
   constructor(
     elementRef: ElementRef,
-    private renderer: Renderer2,
     @Inject(HAMMER_CONFIG_TOKEN)
     private hammerConfigService: HammerConfigService
   ) {
@@ -176,21 +176,4 @@ export class MultipleGestureDirective implements OnInit {
       this.targetedElement.style.transform = transforms;
     }
   }
-}
-
-export class HammerConfigService extends HammerGestureConfig {
-  override = {
-    swipe: {
-      direction: Hammer.DIRECTION_HORIZONTAL,
-      enable: true,
-      pointers: 2,
-      threshold: 10,
-      velocity: 0.1,
-    },
-    pinch: { enable: true, pointers: 2, threshold: 0.1 },
-    pan: {
-      pointers: 1,
-      threshold: 100,
-    },
-  };
 }
