@@ -6,7 +6,6 @@ import {
   InjectionToken,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { HammerGestureConfig } from '@angular/platform-browser';
 import { HammerConfigService } from './hammer-config.service';
@@ -54,6 +53,7 @@ export class PinchPanGestureDirective implements OnInit {
     this.configureHammerManager();
     this.calculateViewportDimensions();
     this.calculateImageDimensions();
+    this.initializeAdjustValues(); // Initialize adjust values based on current state
     this.listenHammerCallbacks();
   }
 
@@ -76,7 +76,7 @@ export class PinchPanGestureDirective implements OnInit {
 
   private listenHammerCallbacks() {
     this.hammerManager.on('pinchmove', (event) => this.handlePinch(event));
-    this.hammerManager.on('pinchend pinchcancel', () => {
+    this.hammerManager.on('pinchend pinchcancel panend pancancel', () => {
       this.isPinching = false;
       this.adjustScale = this.currentScale;
       this.adjustDeltaX = this.currentDeltaX;
@@ -89,6 +89,39 @@ export class PinchPanGestureDirective implements OnInit {
     });
   }
 
+  private initializeAdjustValues() {
+    const transformMatrix = this.getTransformMatrix();
+    this.adjustScale = this.currentScale = transformMatrix.scale;
+    this.adjustDeltaX = this.currentDeltaX = transformMatrix.translateX;
+    this.adjustDeltaY = this.currentDeltaY = transformMatrix.translateY;
+  }
+
+  private getTransformMatrix(): {
+    scale: number;
+    translateX: number;
+    translateY: number;
+  } {
+    const style = window.getComputedStyle(this.targetedElement);
+    const transform = style.getPropertyValue('transform');
+
+    if (transform && transform !== 'none') {
+      const matrix = transform.match(/^matrix\((.+)\)$/);
+      if (matrix) {
+        const matrixValues = matrix[1].split(',').map(parseFloat);
+        const scaleX = matrixValues[0];
+        const scaleY = matrixValues[3];
+        const translateX = matrixValues[4];
+        const translateY = matrixValues[5];
+        return {
+          scale: Math.sqrt(scaleX * scaleX + scaleY * scaleY),
+          translateX,
+          translateY,
+        };
+      }
+    }
+    return { scale: 1, translateX: 0, translateY: 0 };
+  }
+
   private handlePinch(event: HammerInput) {
     this.currentScale = this.adjustScale * event.scale;
     this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
@@ -97,13 +130,14 @@ export class PinchPanGestureDirective implements OnInit {
   }
 
   private handlePan(event: HammerInput) {
-    this.currentScale = this.adjustScale * event.scale;
     this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
     this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
     this.applyTransform();
   }
+
   private applyTransform() {
     const transform = `scale(${this.currentScale}) translate(${this.currentDeltaX}px, ${this.currentDeltaY}px)`;
+    this.targetedElement.style.transition = 'transform 0.2s ease-out';
     this.targetedElement.style.transform = transform;
   }
 }
