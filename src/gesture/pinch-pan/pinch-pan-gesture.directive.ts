@@ -81,10 +81,14 @@ export class PinchPanGestureDirective implements OnInit {
     this.hammerManager.on('pinchend pinchcancel', () => {
       this.isPinching = false;
     });
-    this.hammerManager.on('panstart panmove', (event) => this.handlePan(event));
+    this.hammerManager.on('panstart panmove', (event) => {
+      if (!this.isPinching) {
+        this.handlePan(event);
+      }
+    });
   }
 
-  private handlePinch(event: any) {
+  private handlePinch(event: HammerInput) {
     if (event.type === 'pinchstart') {
       this.isPinching = true;
       this.adjustScale = this.currentScale;
@@ -107,15 +111,27 @@ export class PinchPanGestureDirective implements OnInit {
   }
 
   private handlePan(event: HammerInput) {
-    if (!this.isPinching && event.type.includes('pan')) {
-      this.currentDeltaX += event.deltaX;
-      this.currentDeltaY += event.deltaY;
+    if (event.type === 'panstart') {
+      this.isPinching = false;
+      this.adjustScale = this.currentScale;
+      this.adjustDeltaX = this.currentDeltaX;
+      this.adjustDeltaY = this.currentDeltaY;
+    } else if (event.type === 'panmove') {
+      this.currentScale = this.adjustScale * event.scale;
+      this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
+      this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+
+      // Calculate maximum allowable translation (delta) in X and Y directions
       const maxX =
         (this.imageWidth * this.currentScale - this.viewportWidth) / 2;
       const maxY =
         (this.imageHeight * this.currentScale - this.viewportHeight) / 2;
+
+      // Clamp deltas to stay within bounds
       this.currentDeltaX = Math.max(-maxX, Math.min(maxX, this.currentDeltaX));
       this.currentDeltaY = Math.max(-maxY, Math.min(maxY, this.currentDeltaY));
+
+      // Apply transformations using CSS
       const transforms = `scale(${this.currentScale}) translate(${this.currentDeltaX}px, ${this.currentDeltaY}px)`;
       this.targetedElement.style.transition = 'transform 0.2s ease';
       this.targetedElement.style.transform = transforms;
