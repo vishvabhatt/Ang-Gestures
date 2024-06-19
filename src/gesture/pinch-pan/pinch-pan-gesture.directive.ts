@@ -28,10 +28,10 @@ export class PinchPanGestureDirective implements OnInit {
   private currentDeltaX = 0;
   private currentDeltaY = 0;
   private currentScale = 1;
-  private imageWidth: number = 0;
-  private imageHeight: number = 0;
-  private viewportWidth: number = 0;
-  private viewportHeight: number = 0;
+  private imageWidth = 0;
+  private imageHeight = 0;
+  private viewportWidth = 0;
+  private viewportHeight = 0;
   @Output() eventOutput = new EventEmitter<string>();
 
   constructor(
@@ -75,13 +75,14 @@ export class PinchPanGestureDirective implements OnInit {
   }
 
   private listenHammerCallbacks() {
-    this.hammerManager.on('pinchstart pinchmove', (event) =>
-      this.handlePinch(event)
-    );
+    this.hammerManager.on('pinchmove', (event) => this.handlePinch(event));
     this.hammerManager.on('pinchend pinchcancel', () => {
       this.isPinching = false;
+      this.adjustScale = this.currentScale;
+      this.adjustDeltaX = this.currentDeltaX;
+      this.adjustDeltaY = this.currentDeltaY;
     });
-    this.hammerManager.on('panstart panmove', (event) => {
+    this.hammerManager.on('panmove', (event) => {
       if (!this.isPinching) {
         this.handlePan(event);
       }
@@ -89,52 +90,20 @@ export class PinchPanGestureDirective implements OnInit {
   }
 
   private handlePinch(event: HammerInput) {
-    if (event.type === 'pinchstart') {
-      this.isPinching = true;
-      this.adjustScale = this.currentScale;
-      this.adjustDeltaX = this.currentDeltaX;
-      this.adjustDeltaY = this.currentDeltaY;
-    } else if (event.type === 'pinchmove') {
-      this.currentScale = this.adjustScale * event.scale;
-      this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
-      this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
-      const minScale = 0.5;
-      const maxScale = 5.0;
-      this.currentScale = Math.max(
-        minScale,
-        Math.min(maxScale, this.currentScale)
-      );
-      const transforms = `scale(${this.currentScale}) translate(${this.currentDeltaX}px, ${this.currentDeltaY}px)`;
-      this.targetedElement.style.transition = 'transform 0.2s ease';
-      this.targetedElement.style.transform = transforms;
-    }
+    this.currentScale = this.adjustScale * event.scale;
+    this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
+    this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+    this.applyTransform();
   }
 
   private handlePan(event: HammerInput) {
-    if (event.type === 'panstart') {
-      this.isPinching = false;
-      this.adjustScale = this.currentScale;
-      this.adjustDeltaX = this.currentDeltaX;
-      this.adjustDeltaY = this.currentDeltaY;
-    } else if (event.type === 'panmove') {
-      this.currentScale = this.adjustScale * event.scale;
-      this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
-      this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
-
-      // Calculate maximum allowable translation (delta) in X and Y directions
-      const maxX =
-        (this.imageWidth * this.currentScale - this.viewportWidth) / 2;
-      const maxY =
-        (this.imageHeight * this.currentScale - this.viewportHeight) / 2;
-
-      // Clamp deltas to stay within bounds
-      this.currentDeltaX = Math.max(-maxX, Math.min(maxX, this.currentDeltaX));
-      this.currentDeltaY = Math.max(-maxY, Math.min(maxY, this.currentDeltaY));
-
-      // Apply transformations using CSS
-      const transforms = `scale(${this.currentScale}) translate(${this.currentDeltaX}px, ${this.currentDeltaY}px)`;
-      this.targetedElement.style.transition = 'transform 0.2s ease';
-      this.targetedElement.style.transform = transforms;
-    }
+    this.currentScale = this.adjustScale * event.scale;
+    this.currentDeltaX = this.adjustDeltaX + event.deltaX / this.currentScale;
+    this.currentDeltaY = this.adjustDeltaY + event.deltaY / this.currentScale;
+    this.applyTransform();
+  }
+  private applyTransform() {
+    const transform = `scale(${this.currentScale}) translate(${this.currentDeltaX}px, ${this.currentDeltaY}px)`;
+    this.targetedElement.style.transform = transform;
   }
 }

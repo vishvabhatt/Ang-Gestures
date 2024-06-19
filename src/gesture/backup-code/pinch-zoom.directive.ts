@@ -8,7 +8,7 @@ import {
 import { DIRECTION_HORIZONTAL } from 'hammerjs';
 
 @Directive({
-  selector: '[appPinchZoom]',
+  selector: '[]',
 })
 export class PinchZoomDirective implements AfterViewInit {
   private adjustDeltaX = 0;
