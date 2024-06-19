@@ -27,10 +27,6 @@ export class PinchPanGestureDirective implements OnInit {
   private currentDeltaX = 0;
   private currentDeltaY = 0;
   private currentScale = 1;
-  private imageWidth = 0;
-  private imageHeight = 0;
-  private viewportWidth = 0;
-  private viewportHeight = 0;
 
   private readonly MIN_SCALE = 0.5;
   private readonly MAX_SCALE = 3.0;
@@ -54,20 +50,8 @@ export class PinchPanGestureDirective implements OnInit {
 
   public ngOnInit() {
     this.configureHammerManager();
-    this.calculateViewportDimensions();
-    this.calculateImageDimensions();
-    this.initializeAdjustValues(); // Initialize adjust values based on current state
+    this.initializeAdjustValues();
     this.listenHammerCallbacks();
-  }
-
-  private calculateViewportDimensions() {
-    this.viewportWidth = this.targetedElement.parentElement!.offsetWidth;
-    this.viewportHeight = this.targetedElement.parentElement!.offsetHeight;
-  }
-
-  private calculateImageDimensions() {
-    this.imageWidth = this.targetedElement.offsetWidth;
-    this.imageHeight = this.targetedElement.offsetHeight;
   }
 
   private configureHammerManager() {
