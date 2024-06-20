@@ -19,9 +19,11 @@ export const HAMMER_CONFIG_TOKEN = new InjectionToken<HammerGestureConfig>(
 })
 export class PinchPanGestureDirective implements OnInit {
   private targetedElement: HTMLElement;
-
   private hammerManager: HammerManager;
+
   private isPinching = false;
+  @Output() eventOutput = new EventEmitter<string>();
+
   private adjustDeltaX = 0;
   private adjustDeltaY = 0;
   private adjustScale = 1;
@@ -31,7 +33,6 @@ export class PinchPanGestureDirective implements OnInit {
 
   private readonly MIN_SCALE = 0.5;
   private readonly MAX_SCALE = 3.0;
-  @Output() eventOutput = new EventEmitter<string>();
 
   constructor(
     elementRef: ElementRef,
@@ -52,9 +53,51 @@ export class PinchPanGestureDirective implements OnInit {
 
   public ngOnInit() {
     this.configureHammerManager();
+    this.handleManualGestures();
     this.initializeAdjustValues();
     this.listenHammerCallbacks();
   }
+
+  private handleManualGestures(): void {
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    this.targetedElement.addEventListener('touchstart', (event: TouchEvent) => {
+      if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        initialLeft = this.targetedElement.offsetLeft;
+        initialTop = this.targetedElement.offsetTop;
+      }
+      console.log('TouchStart:');
+    });
+
+    this.targetedElement.addEventListener('touchmove', (event: TouchEvent) => {
+      if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        this.currentDeltaX = this.adjustDeltaX + deltaX / this.currentScale;
+        this.currentDeltaY = this.adjustDeltaY + deltaY / this.currentScale;
+        this.applyTransform();
+      }
+      console.log('TouchMove:');
+    });
+
+    this.targetedElement.addEventListener('touchcancel', (event) => {
+      console.log('TouchCancel');
+    });
+
+    this.targetedElement.addEventListener('touchend', (event) => {
+      this.adjustDeltaX = this.currentDeltaX;
+      this.adjustDeltaY = this.currentDeltaY;
+      console.log('TouchEnd');
+    });
+  }
+
   private configureHammerManager() {
     const pinch = new Hammer.Pinch(this.hammerConfigService.override.pinch);
     const pan = new Hammer.Pan(this.hammerConfigService.override.pan);

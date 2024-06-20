@@ -16,11 +16,14 @@
   display: block;
   width: 100%;
   height: auto;
+  user-select: none;
+  position: relative;
+  touch-action: none;
 }
 
 .background textarea {
   width: 350px;
-  height: 450px; 
+  height: 450px;
   margin-top: 20px;
   padding: 10px;
   resize: none;
