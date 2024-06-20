@@ -4,13 +4,11 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: rgb(247, 253, 220);
 }
 
 .background .supporting {
   max-width: 70%;
   max-height: 70%;
-  background-color: beige;
   overflow: hidden;
 }
 
