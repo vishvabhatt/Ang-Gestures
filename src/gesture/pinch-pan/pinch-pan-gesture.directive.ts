@@ -19,6 +19,7 @@ export const HAMMER_CONFIG_TOKEN = new InjectionToken<HammerGestureConfig>(
 })
 export class PinchPanGestureDirective implements OnInit {
   private targetedElement: HTMLElement;
+
   private hammerManager: HammerManager;
   private isPinching = false;
   private adjustDeltaX = 0;
@@ -39,6 +40,7 @@ export class PinchPanGestureDirective implements OnInit {
   ) {
     if (elementRef.nativeElement as HTMLElement) {
       this.targetedElement = elementRef.nativeElement;
+
       this.hammerManager = new Hammer.Manager(
         this.targetedElement,
         this.hammerConfigService.overrides
@@ -53,7 +55,6 @@ export class PinchPanGestureDirective implements OnInit {
     this.initializeAdjustValues();
     this.listenHammerCallbacks();
   }
-
   private configureHammerManager() {
     const pinch = new Hammer.Pinch(this.hammerConfigService.override.pinch);
     const pan = new Hammer.Pan(this.hammerConfigService.override.pan);
