@@ -130,7 +130,7 @@ export class PinchPanGestureDirective implements OnInit {
 
   private applyTransform() {
     const transform = `scale(${this.currentScale}) translate(${this.currentDeltaX}px, ${this.currentDeltaY}px)`;
-    this.targetedElement.style.transition = 'transform 0.2s ease-out';
+    this.targetedElement.style.transition = 'transform 0.0s ease-out';
     this.targetedElement.style.transform = transform;
   }
 }
