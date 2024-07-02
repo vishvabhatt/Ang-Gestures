@@ -1,8 +1,4 @@
 .background {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
 }
 
@@ -27,4 +23,9 @@
   margin-top: 20px;
   padding: 10px;
   resize: none;
+}
+
+.background textarea {
+  width: 350px;
+  height: 450px;
 }
