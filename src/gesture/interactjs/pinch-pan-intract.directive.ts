@@ -7,7 +7,6 @@ import interact from 'interactjs';
 export class PinchPanInfractDirective implements AfterViewInit {
   private scaleElement: HTMLElement;
   private gestureElement: HTMLElement;
-  private angle = 0;
   private scale = 1;
 
   constructor(elementRef: ElementRef) {
@@ -23,22 +22,14 @@ export class PinchPanInfractDirective implements AfterViewInit {
     interact(this.gestureElement)
       .gesturable({
         listeners: {
-          start: (event) => {
-            console.log('EventType', typeof event);
-            this.angle -= event.angle;
-          },
           move: (event) => {
-            console.log('EventType', typeof event);
-
             requestAnimationFrame(() => {
-              const currentAngle = event.angle + this.angle;
               const currentScale = event.scale * this.scale;
-              this.scaleElement.style.transform = `rotate(${currentAngle}deg) scale(${currentScale})`;
+              this.scaleElement.style.transform = `scale(${currentScale})`;
               this.dragMoveListener(event);
             });
           },
           end: (event) => {
-            this.angle += event.angle;
             this.scale *= event.scale;
           },
         },
