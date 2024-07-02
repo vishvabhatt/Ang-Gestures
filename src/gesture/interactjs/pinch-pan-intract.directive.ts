@@ -11,6 +11,7 @@ export class PinchPanInfractDirective implements AfterViewInit {
 
   constructor(elementRef: ElementRef) {
     const gestureArea = document.getElementById('gesture-area');
+
     if ((elementRef.nativeElement as HTMLElement) && gestureArea !== null) {
       this.scaleElement = elementRef.nativeElement;
       this.gestureElement = gestureArea;
@@ -18,19 +19,19 @@ export class PinchPanInfractDirective implements AfterViewInit {
       throw new Error('No HTML element found');
     }
   }
+
   public ngAfterViewInit(): void {
     interact(this.gestureElement)
       .gesturable({
         listeners: {
           move: (event) => {
-            requestAnimationFrame(() => {
-              const currentScale = event.scale * this.scale;
-              this.scaleElement.style.transform = `scale(${currentScale})`;
-              this.dragMoveListener(event);
-            });
+            event.preventDefault();
+            let currentScale = event.scale * this.scale;
+            this.scaleElement.style.transform = ' scale(' + currentScale + ')';
+            this.dragMoveListener(event);
           },
           end: (event) => {
-            this.scale *= event.scale;
+            this.scale = this.scale * event.scale;
           },
         },
       })
@@ -40,14 +41,13 @@ export class PinchPanInfractDirective implements AfterViewInit {
   }
 
   private dragMoveListener(event: any) {
-    requestAnimationFrame(() => {
-      const target = event.target;
-      const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-      const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+    let target = event.target;
+    let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+    let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-      target.style.transform = `translate(${x}px, ${y}px)`;
-      target.setAttribute('data-x', x.toString());
-      target.setAttribute('data-y', y.toString());
-    });
+    target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+
+    target.setAttribute('data-x', x);
+    target.setAttribute('data-y', y);
   }
 }
