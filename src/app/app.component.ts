@@ -5,11 +5,4 @@ import { Component } from '@angular/core';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
-  public imageUrl = '../assets/right.jpg';
-  public eventOutput: string = '';
-  constructor() {}
-  public onEventOutput(event: string) {
-    this.eventOutput = this.eventOutput + event;
-  }
-}
+export class AppComponent {}
