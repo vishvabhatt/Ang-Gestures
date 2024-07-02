@@ -22,7 +22,6 @@ export class PinchPanGestureDirective implements OnInit {
   private hammerManager: HammerManager;
 
   private isPinching = false;
-  @Output() eventOutput = new EventEmitter<string>();
 
   private adjustDeltaX = 0;
   private adjustDeltaY = 0;

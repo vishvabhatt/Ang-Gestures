@@ -6,11 +6,12 @@ import {
   PinchPanGestureDirective,
 } from './hammerjs/pinch-pan-gesture.directive';
 import { HammerConfigService } from './hammerjs/hammer-config.service';
+import { PinchPanInfractDirective } from './interactjs/pinch-pan-intract.directive';
 
 @NgModule({
-  declarations: [PinchPanGestureDirective],
+  declarations: [PinchPanGestureDirective, PinchPanInfractDirective],
   imports: [CommonModule, HammerModule],
-  exports: [PinchPanGestureDirective],
+  exports: [PinchPanGestureDirective, PinchPanInfractDirective],
   providers: [
     {
       provide: HAMMER_CONFIG_TOKEN,
