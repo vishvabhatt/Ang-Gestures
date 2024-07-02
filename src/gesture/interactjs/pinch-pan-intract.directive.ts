@@ -8,6 +8,7 @@ export class PinchPanInfractDirective implements AfterViewInit {
   private scaleElement: HTMLElement;
   private gestureElement: HTMLElement;
   private scale = 1;
+  position = { x: 0, y: 0 };
 
   constructor(elementRef: ElementRef) {
     const gestureArea = document.getElementById('gesture-area');
@@ -36,18 +37,18 @@ export class PinchPanInfractDirective implements AfterViewInit {
         },
       })
       .draggable({
-        listeners: { move: this.dragMoveListener },
+        listeners: {
+          move: (event) => {
+            event.preventDefault();
+            this.dragMoveListener(event);
+          },
+        },
       });
   }
 
   private dragMoveListener(event: any) {
-    let target = event.target;
-    let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-    let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-    target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-
-    target.setAttribute('data-x', x);
-    target.setAttribute('data-y', y);
+    this.position.x += event.dx;
+    this.position.y += event.dy;
+    event.target.style.transform = `translate(${this.position.x}px, ${this.position.y}px)`;
   }
 }
