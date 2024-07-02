@@ -2,15 +2,15 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HammerModule } from '@angular/platform-browser';
 import {
-  HammerConfigService,
   HAMMER_CONFIG_TOKEN,
-  MultipleGestureDirective,
-} from './multiple-gesture.directive';
+  PinchPanGestureDirective,
+} from './hammerjs/pinch-pan-gesture.directive';
+import { HammerConfigService } from './hammerjs/hammer-config.service';
 
 @NgModule({
-  declarations: [MultipleGestureDirective],
+  declarations: [PinchPanGestureDirective],
   imports: [CommonModule, HammerModule],
-  exports: [MultipleGestureDirective],
+  exports: [PinchPanGestureDirective],
   providers: [
     {
       provide: HAMMER_CONFIG_TOKEN,
