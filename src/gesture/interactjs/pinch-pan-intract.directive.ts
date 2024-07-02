@@ -9,11 +9,9 @@ export class PinchPanInfractDirective implements AfterViewInit {
   private gestureElement: HTMLElement;
   private angle = 0;
   private scale = 1;
-  private resetTimeout: any;
 
   constructor(elementRef: ElementRef) {
     const gestureArea = document.getElementById('gesture-area');
-
     if ((elementRef.nativeElement as HTMLElement) && gestureArea !== null) {
       this.scaleElement = elementRef.nativeElement;
       this.gestureElement = gestureArea;
@@ -28,24 +26,20 @@ export class PinchPanInfractDirective implements AfterViewInit {
           start: (event) => {
             console.log('EventType', typeof event);
             this.angle -= event.angle;
-            clearTimeout(this.resetTimeout);
-            this.scaleElement.classList.remove('reset');
           },
           move: (event) => {
-            var currentAngle = event.angle + this.angle;
-            var currentScale = event.scale * this.scale;
+            console.log('EventType', typeof event);
 
-            this.scaleElement.style.transform =
-              'rotate(' + currentAngle + 'deg)' + 'scale(' + currentScale + ')';
-
-            this.dragMoveListener(event);
+            requestAnimationFrame(() => {
+              const currentAngle = event.angle + this.angle;
+              const currentScale = event.scale * this.scale;
+              this.scaleElement.style.transform = `rotate(${currentAngle}deg) scale(${currentScale})`;
+              this.dragMoveListener(event);
+            });
           },
           end: (event) => {
-            this.angle = this.angle + event.angle;
-            this.scale = this.scale * event.scale;
-
-            this.resetTimeout = setTimeout(this.reset, 1000);
-            this.scaleElement.classList.add('reset');
+            this.angle += event.angle;
+            this.scale *= event.scale;
           },
         },
       })
@@ -54,23 +48,15 @@ export class PinchPanInfractDirective implements AfterViewInit {
       });
   }
 
-  private reset() {
-    this.scaleElement.style.transform = 'scale(1)';
-    this.angle = 0;
-    this.scale = 1;
-  }
-
   private dragMoveListener(event: any) {
-    let target = event.target;
-    // keep the dragged position in the data-x/data-y attributes
-    let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-    let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+    requestAnimationFrame(() => {
+      const target = event.target;
+      const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+      const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-    // translate the element
-    target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-
-    // update the posiion attributes
-    target.setAttribute('data-x', x);
-    target.setAttribute('data-y', y);
+      target.style.transform = `translate(${x}px, ${y}px)`;
+      target.setAttribute('data-x', x.toString());
+      target.setAttribute('data-y', y.toString());
+    });
   }
 }
