@@ -72,7 +72,6 @@ export class PinchPanGestureDirective implements OnInit {
         initialLeft = this.targetedElement.offsetLeft;
         initialTop = this.targetedElement.offsetTop;
       }
-      console.log('TouchStart:');
     });
 
     this.targetedElement.addEventListener('touchmove', (event: TouchEvent) => {
@@ -84,17 +83,11 @@ export class PinchPanGestureDirective implements OnInit {
         this.currentDeltaY = this.adjustDeltaY + deltaY / this.currentScale;
         this.applyTransform();
       }
-      console.log('TouchMove:');
-    });
-
-    this.targetedElement.addEventListener('touchcancel', (event) => {
-      console.log('TouchCancel');
     });
 
     this.targetedElement.addEventListener('touchend', (event) => {
       this.adjustDeltaX = this.currentDeltaX;
       this.adjustDeltaY = this.currentDeltaY;
-      console.log('TouchEnd');
     });
   }
 

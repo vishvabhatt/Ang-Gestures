@@ -4,8 +4,8 @@ import { HammerModule } from '@angular/platform-browser';
 import {
   HAMMER_CONFIG_TOKEN,
   PinchPanGestureDirective,
-} from './pinch-pan/pinch-pan-gesture.directive';
-import { HammerConfigService } from './pinch-pan/hammer-config.service';
+} from './hammerjs/pinch-pan-gesture.directive';
+import { HammerConfigService } from './hammerjs/hammer-config.service';
 
 @NgModule({
   declarations: [PinchPanGestureDirective],
