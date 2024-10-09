@@ -1,3 +1,15 @@
 <div class="background">
-  <img appPinchPanGesture src="../assets/Junagadh.jpg" />
+  <div
+    class="gesture-area"
+    appGesture
+    (pan)="onPan($event)"
+    (zoom)="onZoom($event)"
+    [style.transform]="transform"
+  >
+    <img
+      src="../assets/Junagadh.jpg"
+      alt="Sardar Patel Darwaja"
+      [style.transform]="imageTransform"
+    />
+  </div>
 </div>
