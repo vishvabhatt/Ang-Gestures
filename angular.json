@@ -30,7 +30,7 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "outputPath": "dist/gesture-exploration",
-            "scripts": ["node_modules/hammerjs/hammer.js"],
+            "scripts": [""],
             "styles": ["src/global_styles.css"],
             "tsConfig": "tsconfig.app.json"
           }
