@@ -14,7 +14,8 @@
               "extractLicenses": false,
 
               "optimization": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "assets": ["src/favicon.ico", "src/assets"]
             },
             "production": {
               "aot": true,
@@ -22,7 +23,15 @@
 
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false
+              "sourceMap": false,
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "src/assets/",
+                  "ignore": ["**/*.dev.json"],
+                  "output": "/assets/"
+                }
+              ]
             }
           },
           "options": {
