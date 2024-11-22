@@ -1,5 +1,4 @@
 .angular
-dist
 node_modules
 HammerJS-Gesture.code-workspace
 .DS_Store
