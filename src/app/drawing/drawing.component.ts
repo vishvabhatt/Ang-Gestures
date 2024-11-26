@@ -34,7 +34,12 @@ export class DrawingComponent implements OnInit, OnDestroy {
     this.ctx.lineCap = 'round';
     this.ctx.strokeStyle = 'red';
 
-    // Running outside Angular's change detection cycle for better performance
+    this.addListeners(); // Initialize the event listeners
+  }
+
+  public addListeners() {
+    const canvas = this.canvasRef.nativeElement;
+
     this.ngZone.runOutsideAngular(() => {
       const pointerDownHandler = (event: PointerEvent) =>
         this.handlePointerDown(event);
@@ -72,7 +77,6 @@ export class DrawingComponent implements OnInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     canvas.setPointerCapture(event.pointerId);
 
-    // Running inside Angular's zone to ensure UI updates are tracked
     this.ngZone.run(() => {
       this.isDrawing = true;
       this.ctx.beginPath();
@@ -86,7 +90,6 @@ export class DrawingComponent implements OnInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
 
-    // Running inside Angular's zone to ensure UI updates are tracked
     this.ngZone.run(() => {
       this.ctx.lineTo(event.offsetX, event.offsetY);
       this.ctx.stroke();
@@ -102,18 +105,27 @@ export class DrawingComponent implements OnInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     canvas.releasePointerCapture(event.pointerId);
 
-    // Running inside Angular's zone to ensure UI updates are tracked
     this.ngZone.run(() => {
       this.isDrawing = false;
       this.ctx.closePath();
     });
   }
 
-  ngOnDestroy() {
-    this.destroyRequested = true;
+  // Clear the canvas
+  clearCanvas() {
+    const canvas = this.canvasRef.nativeElement;
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
+  // Remove event listeners
+  removeListeners() {
     this.eventListeners.forEach((cleanup) => cleanup());
     this.eventListeners = [];
+  }
+
+  ngOnDestroy() {
+    this.destroyRequested = true;
+    this.removeListeners(); // Remove all event listeners to avoid memory leaks
 
     if (this.ctx) {
       this.ctx.clearRect(
