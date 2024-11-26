@@ -4,7 +4,6 @@ import {
   OnInit,
   ViewChild,
   OnDestroy,
-  NgZone,
 } from '@angular/core';
 
 @Component({
@@ -20,8 +19,7 @@ export class DrawingComponent implements OnInit, OnDestroy {
 
   private eventListeners: (() => void)[] = [];
   private destroyRequested = false;
-
-  constructor(private ngZone: NgZone) {}
+  private listenersActive = false;
 
   ngOnInit() {
     const canvas = this.canvasRef.nativeElement;
@@ -34,32 +32,37 @@ export class DrawingComponent implements OnInit, OnDestroy {
     this.ctx.lineCap = 'round';
     this.ctx.strokeStyle = 'red';
 
-    this.ngZone.runOutsideAngular(() => {
-      const pointerDownHandler = (event: PointerEvent) =>
-        this.handlePointerDown(event);
-      const pointerMoveHandler = (event: PointerEvent) =>
-        this.handlePointerMove(event);
-      const pointerUpHandler = (event: PointerEvent) =>
-        this.handlePointerUp(event);
+    this.addListeners();
+  }
 
-      canvas.addEventListener('pointerdown', pointerDownHandler);
-      canvas.addEventListener('pointermove', pointerMoveHandler);
-      canvas.addEventListener('pointerup', pointerUpHandler);
-      canvas.addEventListener('pointercancel', pointerUpHandler);
+  private attachEventListeners(canvas: HTMLCanvasElement) {
+    const pointerDownHandler = (event: PointerEvent) =>
+      this.handlePointerDown(event);
+    const pointerMoveHandler = (event: PointerEvent) =>
+      this.handlePointerMove(event);
+    const pointerUpHandler = (event: PointerEvent) =>
+      this.handlePointerUp(event);
 
-      this.eventListeners.push(() =>
-        canvas.removeEventListener('pointerdown', pointerDownHandler)
-      );
-      this.eventListeners.push(() =>
-        canvas.removeEventListener('pointermove', pointerMoveHandler)
-      );
-      this.eventListeners.push(() =>
-        canvas.removeEventListener('pointerup', pointerUpHandler)
-      );
-      this.eventListeners.push(() =>
-        canvas.removeEventListener('pointercancel', pointerUpHandler)
-      );
-    });
+    canvas.addEventListener('pointerdown', pointerDownHandler);
+    canvas.addEventListener('pointermove', pointerMoveHandler);
+    canvas.addEventListener('pointerup', pointerUpHandler);
+    canvas.addEventListener('pointercancel', pointerUpHandler);
+
+    this.eventListeners.push(() =>
+      canvas.removeEventListener('pointerdown', pointerDownHandler)
+    );
+    this.eventListeners.push(() =>
+      canvas.removeEventListener('pointermove', pointerMoveHandler)
+    );
+    this.eventListeners.push(() =>
+      canvas.removeEventListener('pointerup', pointerUpHandler)
+    );
+    this.eventListeners.push(() =>
+      canvas.removeEventListener('pointercancel', pointerUpHandler)
+    );
+
+    this.listenersActive = true;
+    console.log('Event listeners attached.');
   }
 
   private handlePointerDown(event: PointerEvent) {
@@ -71,11 +74,9 @@ export class DrawingComponent implements OnInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     canvas.setPointerCapture(event.pointerId);
 
-    this.ngZone.run(() => {
-      this.isDrawing = true;
-      this.ctx.beginPath();
-      this.ctx.moveTo(event.offsetX, event.offsetY);
-    });
+    this.isDrawing = true;
+    this.ctx.beginPath();
+    this.ctx.moveTo(event.offsetX, event.offsetY);
   }
 
   private handlePointerMove(event: PointerEvent) {
@@ -84,10 +85,8 @@ export class DrawingComponent implements OnInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
 
-    this.ngZone.run(() => {
-      this.ctx.lineTo(event.offsetX, event.offsetY);
-      this.ctx.stroke();
-    });
+    this.ctx.lineTo(event.offsetX, event.offsetY);
+    this.ctx.stroke();
   }
 
   private handlePointerUp(event: PointerEvent) {
@@ -99,26 +98,43 @@ export class DrawingComponent implements OnInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     canvas.releasePointerCapture(event.pointerId);
 
-    this.ngZone.run(() => {
-      this.isDrawing = false;
-      this.ctx.closePath();
-    });
+    this.isDrawing = false;
+    this.ctx.closePath();
+  }
+
+  clearCanvas() {
+    this.ctx.clearRect(
+      0,
+      0,
+      this.canvasRef.nativeElement.width,
+      this.canvasRef.nativeElement.height
+    );
+  }
+
+  removeListeners() {
+    if (!this.listenersActive) {
+      console.warn('Listeners are already removed.');
+      return;
+    }
+
+    this.eventListeners.forEach((cleanup) => cleanup());
+    this.eventListeners = [];
+    this.listenersActive = false;
+
+    console.log('Event listeners removed.');
+  }
+
+  addListeners() {
+    if (this.listenersActive) {
+      console.warn('Listeners are already active.');
+      return;
+    }
+
+    this.attachEventListeners(this.canvasRef.nativeElement);
   }
 
   ngOnDestroy() {
     this.destroyRequested = true;
-
-    this.eventListeners.forEach((cleanup) => cleanup());
-    this.eventListeners = [];
-
-    if (this.ctx) {
-      this.ctx.clearRect(
-        0,
-        0,
-        this.canvasRef.nativeElement.width,
-        this.canvasRef.nativeElement.height
-      );
-      this.ctx = null as any;
-    }
+    this.removeListeners();
   }
 }
